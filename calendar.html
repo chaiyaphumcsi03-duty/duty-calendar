@@ -8,31 +8,122 @@
   <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600&display=swap" rel="stylesheet">
 
   <style>
-    body { font-family: 'Sarabun', sans-serif; margin:0; background:#f4f6f9; }
-    .calendar-container { max-width:900px; margin:auto; padding:20px; }
-    h2 { text-align:center; font-size:28px; margin-bottom:10px; }
-    .calendar-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
-    button { padding:8px 12px; background:#4285F4; border:none; border-radius:6px; color:white; cursor:pointer; }
+    body {
+      font-family: 'Sarabun', sans-serif;
+      margin: 0;
+      background: #f4f6f9;
+    }
 
-    table { width:100%; border-collapse:collapse; background:white; border-radius:10px;
-            overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.1); }
+    .calendar-container {
+      max-width: 900px;
+      margin: auto;
+      padding: 20px;
+    }
 
-    th { background:#f1f3f4; padding:12px; font-weight:600; }
-    td { height:90px; text-align:right; vertical-align:top; padding:8px; cursor:pointer; position:relative; }
-    td:hover { background:#e8f0fe; }
+    h2 {
+      text-align: center;
+      font-size: 28px;
+      margin-bottom: 10px;
+    }
 
-    .today { background:#d2e3fc !important; border:2px solid #4285F4; }
+    .calendar-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    button {
+      padding: 8px 12px;
+      background: #4285F4;
+      border: none;
+      border-radius: 6px;
+      color: white;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: white;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    th {
+      background: #f1f3f4;
+      padding: 12px;
+      font-weight: 600;
+    }
+
+    td {
+      height: 100px;
+      text-align: right;
+      vertical-align: top;
+      padding: 8px;
+      cursor: pointer;
+      position: relative;
+    }
+
+    td:hover {
+      background: #e8f0fe;
+    }
+
+    .today {
+      background: #d2e3fc !important;
+      border: 2px solid #4285F4;
+    }
 
     .duty-box {
-      position:absolute; bottom:5px; left:5px; right:5px; padding:2px 4px;
-      border-radius:4px; font-size:12px; color:white; text-align:left;
+      position: absolute;
+      bottom: 5px;
+      left: 5px;
+      right: 5px;
+      padding: 2px 4px;
+      border-radius: 4px;
+      font-size: 12px;
+      text-align: left;
+      color: white;
     }
 
     .duty-panel {
-      margin-top:20px; padding:15px; background:white; border-radius:10px;
-      box-shadow:0 2px 8px rgba(0,0,0,0.1); font-size:18px;
+      margin-top: 20px;
+      padding: 15px;
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      font-size: 18px;
     }
 
+    .panel-photo {
+      width: 70px;
+      height: 70px;
+      border-radius: 50%;
+      object-fit: cover;
+      margin-bottom: 10px;
+      border: 3px solid #ccc;
+    }
+
+    .phone-btn {
+      display: inline-block;
+      padding: 8px 12px;
+      background: #34A853;
+      color: white;
+      border-radius: 8px;
+      text-decoration: none;
+      font-size: 16px;
+      margin-top: 10px;
+      display: inline-block;
+    }
+
+    /* Responsive */
+    @media (max-width: 600px) {
+      h2 { font-size: 22px; }
+      td { height: 80px; font-size: 12px; }
+      .duty-box { font-size: 10px; }
+    }
   </style>
 </head>
 <body>
@@ -55,16 +146,18 @@
     <tbody></tbody>
   </table>
 
-  <div class="duty-panel" id="dutyPanel">เลือกวันที่เพื่อดูข้อมูลเวรของวันนั้น</div>
+  <div class="duty-panel" id="dutyPanel">
+    เลือกวันที่เพื่อดูข้อมูลเวรของวันนั้น
+  </div>
 </div>
 
 <script>
-const apiURL = "https://script.google.com/macros/s/AKfycbwfojNxXY9BrD5G7kGUD1LB_BHdJo3aKySeJBGeC51_8bRE4BhDNNXa1OlYWfG1Ec1n/exec";
+const apiURL = "https://script.google.com/macros/s/AKfycbyuFW48RZO-4TDgMSc2OtOPu989Lzglu04yfqIGUJ149GFUapUTvvcC7_tUIFzOHpkE/exec";
 
 let dutyData = [];
 let current = new Date();
 
-// โหลดข้อมูล
+// โหลดข้อมูลจาก API
 fetch(apiURL)
   .then(res => res.json())
   .then(data => {
@@ -76,12 +169,12 @@ fetch(apiURL)
 function renderCalendar(date) {
   const year = date.getFullYear();
   const month = date.getMonth();
-
+  
   document.getElementById("monthTitle").innerText =
-    date.toLocaleString("th-TH", { month:"long", year:"numeric" });
+    date.toLocaleString("th-TH", { month: "long", year: "numeric" });
 
   const firstDay = new Date(year, month, 1).getDay();
-  const lastDate = new Date(year, month+1, 0).getDate();
+  const lastDate = new Date(year, month + 1, 0).getDate();
 
   let tbody = "";
   let day = 1;
@@ -94,30 +187,31 @@ function renderCalendar(date) {
         row += "<td></td>";
       } else {
         let fullDate = `${year}-${String(month+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+
         let duty = dutyData.find(x => x.date === fullDate);
-        let isToday = fullDate === new Date().toISOString().slice(0,10);
+        let isToday = fullDate === new Date().toISOString().slice(0, 10);
 
         row += `
-<td class="${isToday ? 'today' : ''}" onclick="showDuty('${fullDate}')">
-  ${day}
+          <td class="${isToday ? 'today' : ''}" onclick="showDuty('${fullDate}')">
+            ${day}
 
-  ${duty && duty.photo ? `
-      <img src="${duty.photo}"
-           style="width:28px;height:28px;border-radius:50%;
-                  position:absolute;top:5px;left:5px;object-fit:cover;">
-  ` : ""}
+            ${duty && duty.photo ? `
+              <img src="${duty.photo}" style="
+                width:28px;height:28px;border-radius:50%;
+                position:absolute;top:5px;left:5px;object-fit:cover;">
+            ` : ""}
 
-  ${duty ? `
-      <div class="duty-box" style="background:${duty.color};">
-        ${duty.name}
-      </div>
-  ` : ""}
-</td>
-`;
-
+            ${duty ? `
+              <div class='duty-box' style="background:${duty.color};">
+                ${duty.name}
+              </div>
+            ` : ""}
+          </td>
+        `;
         day++;
       }
     }
+
     row += "</tr>";
     tbody += row;
   }
@@ -126,33 +220,36 @@ function renderCalendar(date) {
 }
 
 function showDuty(date) {
-  const panel = document.getElementById("dutyPanel");
-  const duty = dutyData.find(x => x.date === date);
+  let duty = dutyData.find(x => x.date === date);
 
   if (!duty) {
-    panel.innerHTML = `📌 วันที่ ${formatThai(date)}<br>❌ ไม่มีข้อมูลเวร`;
+    document.getElementById("dutyPanel").innerHTML =
+      `📌 วันที่ ${formatThai(date)}<br>❌ ไม่มีข้อมูล`;
     return;
   }
 
-  panel.innerHTML = `
-    <h3>📌 วันที่ ${formatThai(date)}</h3>
-    <img src="${duty.photo}" style="width:90px;height:90px;border-radius:50%;"><br>
-    👮‍♂️ <b>${duty.name}</b><br>
-    📞 <a href="tel:${duty.phone}" style="font-size:20px;">${duty.phone}</a><br>
-    <button onclick="window.location.href='tel:${duty.phone}'"
-      style="margin-top:10px;padding:10px 20px;background:${duty.color};
-      border:none;border-radius:8px;color:white;font-size:16px;">
-      โทรหาเจ้าหน้าที่
-    </button>
+  document.getElementById("dutyPanel").innerHTML = `
+    <img src="${duty.photo}" class="panel-photo">
+    <div><b>${duty.name}</b></div>
+    <div>📞 ${duty.phone}</div>
+    <a class="phone-btn" href="tel:${duty.phone}">โทรเลย</a>
   `;
 }
 
 function autoShowTodayDuty() {
-  showDuty(new Date().toISOString().slice(0,10));
+  let today = new Date().toISOString().slice(0, 10);
+  showDuty(today);
 }
 
-function prevMonth() { current.setMonth(current.getMonth()-1); renderCalendar(current); }
-function nextMonth() { current.setMonth(current.getMonth()+1); renderCalendar(current); }
+function prevMonth() {
+  current.setMonth(current.getMonth() - 1);
+  renderCalendar(current);
+}
+
+function nextMonth() {
+  current.setMonth(current.getMonth() + 1);
+  renderCalendar(current);
+}
 
 function formatThai(d) {
   let [y,m,day] = d.split("-");

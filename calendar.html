@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Duty Calendar</title>
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600&display=swap" rel="stylesheet">
+
+  <style>
+    body {
+      font-family: 'Sarabun', sans-serif;
+      margin: 0;
+      background: #f4f6f9;
+    }
+
+    .calendar-container {
+      max-width: 900px;
+      margin: auto;
+      padding: 20px;
+    }
+
+    h2 {
+      text-align: center;
+      font-size: 28px;
+      margin-bottom: 10px;
+    }
+
+    .calendar-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    button {
+      padding: 8px 12px;
+      background: #4285F4;
+      border: none;
+      border-radius: 6px;
+      color: white;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: white;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    th {
+      background: #f1f3f4;
+      padding: 12px;
+      font-weight: 600;
+    }
+
+    td {
+      height: 90px;
+      text-align: right;
+      vertical-align: top;
+      padding: 8px;
+      cursor: pointer;
+      position: relative;
+    }
+
+    td:hover {
+      background: #e8f0fe;
+    }
+
+    .today {
+      background: #d2e3fc !important;
+      border: 2px solid #4285F4;
+    }
+
+    .duty-box {
+      position: absolute;
+      bottom: 5px;
+      left: 5px;
+      right: 5px;
+      background: #e8f0fe;
+      padding: 2px 4px;
+      border-radius: 4px;
+      font-size: 12px;
+      color: #1a73e8;
+      text-align: left;
+    }
+
+    .duty-panel {
+      margin-top: 20px;
+      padding: 15px;
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      font-size: 18px;
+    }
+
+/* Responsive (มือถือ) */
+@media (max-width: 600px) {
+
+  h2 {
+    font-size: 22px;
+  }
+
+  button {
+    padding: 6px 8px;
+    font-size: 12px;
+  }
+
+  th {
+    padding: 8px;
+    font-size: 12px;
+  }
+
+  td {
+    height: 70px;
+    font-size: 12px;
+    padding: 4px;
+  }
+
+  .duty-box {
+    font-size: 10px;
+    padding: 1px 3px;
+  }
+
+  .duty-panel {
+    font-size: 16px;
+  }
+}
+  </style>
+
+</head>
+<body>
+
+<div class="calendar-container">
+  <h2>ตารางเวรประจำวัน</h2>
+
+  <div class="calendar-header">
+    <button onclick="prevMonth()">⬅ เดือนก่อนหน้า</button>
+    <div id="monthTitle" style="font-size:20px;font-weight:600;"></div>
+    <button onclick="nextMonth()">เดือนถัดไป ➡</button>
+  </div>
+
+  <table id="calendar">
+    <thead>
+      <tr>
+        <th>อา</th><th>จ</th><th>อ</th><th>พ</th><th>พฤ</th><th>ศ</th><th>ส</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <div class="duty-panel" id="dutyPanel">
+    เลือกวันที่เพื่อดูข้อมูลเวรของวันนั้น
+  </div>
+</div>
+
+<script>
+const apiURL = "https://script.google.com/macros/s/AKfycbwgZp5DGJFgKEqUIg5JpaRfx4q99TLzceVDCzHBxkJ9Ri4XNxihZgbmeuMfW5jvcmy1/exec";
+
+let dutyData = [];
+let current = new Date();
+
+// โหลดข้อมูลเวรจาก API
+fetch(apiURL)
+  .then(res => res.json())
+  .then(data => {
+    dutyData = data;
+    renderCalendar(current);
+    autoShowTodayDuty();
+  });
+
+function renderCalendar(date) {
+  const year = date.getFullYear();
+  const month = date.getMonth();
+  
+  document.getElementById("monthTitle").innerText =
+    date.toLocaleString("th-TH", { month: "long", year: "numeric" });
+
+  const firstDay = new Date(year, month, 1).getDay();
+  const lastDate = new Date(year, month + 1, 0).getDate();
+
+  let tbody = "";
+  let day = 1;
+
+  for (let i = 0; i < 6; i++) {
+    let row = "<tr>";
+
+    for (let j = 0; j < 7; j++) {
+      if ((i === 0 && j < firstDay) || day > lastDate) {
+        row += "<td></td>";
+      } else {
+        let fullDate = `${year}-${String(month+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+
+        let duty = dutyData.find(x => x.date === fullDate);
+
+        let isToday =
+          fullDate === new Date().toISOString().slice(0, 10);
+
+        row += `
+          <td class="${isToday ? 'today' : ''}" onclick="showDuty('${fullDate}')">
+            ${day}
+            ${duty ? `<div class='duty-box'>${duty.name}</div>` : ""}
+          </td>
+        `;
+        day++;
+      }
+    }
+
+    row += "</tr>";
+    tbody += row;
+  }
+
+  document.querySelector("#calendar tbody").innerHTML = tbody;
+}
+
+function showDuty(date) {
+  const panel = document.getElementById("dutyPanel");
+  const duty = dutyData.find(x => x.date === date);
+
+  panel.innerHTML = duty
+    ? `📌 วันที่ ${formatThai(date)} <br> 👮‍♂️ ผู้รับผิดชอบ: <b>${duty.name}</b>`
+    : `📌 วันที่ ${formatThai(date)} <br> ❌ ยังไม่มีข้อมูลเวร`;
+}
+
+function autoShowTodayDuty() {
+  let today = new Date().toISOString().slice(0,10);
+  showDuty(today);
+}
+
+function prevMonth() {
+  current.setMonth(current.getMonth() - 1);
+  renderCalendar(current);
+}
+
+function nextMonth() {
+  current.setMonth(current.getMonth() + 1);
+  renderCalendar(current);
+}
+
+function formatThai(d) {
+  let [y,m,day] = d.split("-");
+  const thMonths = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
+  return `${parseInt(day)} ${thMonths[m-1]} ${parseInt(y)+543}`;
+}
+</script>
+
+</body>
+</html>

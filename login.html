@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<title>Admin Login</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+body {
+  background: #f1f3f4;
+  font-family: 'Sarabun', sans-serif;
+  padding: 40px;
+}
+.card {
+  max-width: 350px;
+  margin: auto;
+  background: white;
+  padding: 25px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+input {
+  width: 100%;
+  padding: 10px;
+  margin-top: 10px;
+  border-radius: 8px;
+  border: 1px solid #bbb;
+}
+button {
+  width: 100%;
+  margin-top: 15px;
+  padding: 10px;
+  background: #1a73e8;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+}
+</style>
+
+</head>
+<body>
+
+<div class="card">
+  <h2 style="text-align:center;">เข้าสู่ระบบ Admin</h2>
+
+  <input type="password" id="pass" placeholder="กรอกรหัสผ่าน">
+
+  <button onclick="login()">เข้าสู่ระบบ</button>
+
+  <p id="status" style="color:red;text-align:center;"></p>
+</div>
+
+<script>
+// รหัสผ่านสำหรับเข้า admin
+const ADMIN_PASS = "1234";
+
+function login() {
+  let p = document.getElementById("pass").value;
+
+  if (p === ADMIN_PASS) {
+    window.location.href = "admin.html";
+  } else {
+    document.getElementById("status").innerHTML = "รหัสผ่านไม่ถูกต้อง";
+  }
+}
+</script>
+
+</body>
+</html>

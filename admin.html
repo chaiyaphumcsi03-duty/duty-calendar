@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<title>Admin - แก้ไขเวร</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+body {
+  font-family: 'Sarabun', sans-serif;
+  background: #f1f3f4;
+  padding: 20px;
+}
+
+.card {
+  max-width: 450px;
+  margin: auto;
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+input, select {
+  width: 100%;
+  padding: 10px;
+  margin-top: 8px;
+  margin-bottom: 15px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+button {
+  width: 100%;
+  padding: 10px;
+  background: #1a73e8;
+  color: white;
+  font-size: 16px;
+  border-radius: 8px;
+  border: none;
+}
+
+</style>
+</head>
+<body>
+
+<div class="card">
+  <h2>แก้ไขข้อมูลเวร</h2>
+
+  <label>เลือกวันที่</label>
+  <input type="date" id="dutyDate">
+
+  <label>เลือกบุคลากร</label>
+  <select id="dutyName">
+    <option value="ร.ต.อ. เกษม">ร.ต.อ. เกษม</option>
+    <option value="ด.ต. สมชาย">ด.ต. สมชาย</option>
+    <option value="ร.ต.ท. มนตรี">ร.ต.ท. มนตรี</option>
+  </select>
+
+  <button onclick="updateDuty()">อัปเดตข้อมูล</button>
+
+  <p id="status"></p>
+</div>
+
+<script>
+const apiUpdateURL = "https://script.google.com/macros/s/AKfycbykaK48kdfshkJp5w2MuXCFq5SLt7b5ilpU_VqjUdHZzK93o4igivGEcPducQ5p3RxD/exec?update=1";  
+
+function updateDuty() {
+  const date = document.getElementById("dutyDate").value;
+  const name = document.getElementById("dutyName").value;
+
+  fetch(apiUpdateURL + "&date=" + date + "&name=" + name)
+    .then(res => res.text())
+    .then(txt => {
+      document.getElementById("status").innerHTML = 
+        "<b style='color:green;'>บันทึกข้อมูลสำเร็จ!</b>";
+    });
+}
+</script>
+
+</body>
+</html>

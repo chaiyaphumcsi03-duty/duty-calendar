@@ -5,6 +5,8 @@
 <title>Admin - แก้ไขเวร</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600&display=swap" rel="stylesheet">
+
 <style>
 body {
   font-family: 'Sarabun', sans-serif;
@@ -40,6 +42,23 @@ button {
   border: none;
 }
 
+.profile-box {
+  text-align: center;
+  margin-bottom: 15px;
+}
+
+.profile-box img {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-bottom: 8px;
+}
+
+.profile-name {
+  font-size: 18px;
+  font-weight: 600;
+}
 </style>
 </head>
 <body>
@@ -51,11 +70,13 @@ button {
   <input type="date" id="dutyDate">
 
   <label>เลือกบุคลากร</label>
-  <select id="dutyName">
-    <option value="ร.ต.อ. เกษม">ร.ต.อ. เกษม</option>
-    <option value="ด.ต. สมชาย">ด.ต. สมชาย</option>
-    <option value="ร.ต.ท. มนตรี">ร.ต.ท. มนตรี</option>
-  </select>
+  <select id="dutyName" onchange="showProfile()"></select>
+
+  <div class="profile-box" id="previewBox" style="display:none;">
+    <img id="previewImg">
+    <div class="profile-name" id="previewName"></div>
+    <div id="previewPhone"></div>
+  </div>
 
   <button onclick="updateDuty()">อัปเดตข้อมูล</button>
 
@@ -63,7 +84,40 @@ button {
 </div>
 
 <script>
-const apiUpdateURL = "https://script.google.com/macros/s/AKfycbykaK48kdfshkJp5w2MuXCFq5SLt7b5ilpU_VqjUdHZzK93o4igivGEcPducQ5p3RxD/exec?update=1";  
+
+// ==== รายชื่อบุคลากรแบบ JSON (จากข้อมูลของคุณ) ====
+const officers = [
+  { name: "พ.ต.ท.หญิง กนกวรรณ อิ่มสวัสดิ์", phone: "0896496219", photo: "https://i.imgur.com/Cu8Eee5.jpeg", color: "#4285F4" },
+  { name: "พ.ต.ท.เศกสรรค์ ธรรมกุล", phone: "0878742006", photo: "https://i.imgur.com/R0WnYbq.jpeg", color: "#34A853" },
+  { name: "ร.ต.อ.สุรพงษ์ หมอดี", phone: "0982685522", photo: "https://i.imgur.com/H53f6Nv.jpeg", color: "#F9AB00" },
+  { name: "ร.ต.อ.ธีรภัทร ภิภัทรตระกูลวงษ์", phone: "0994980007", photo: "https://i.imgur.com/MvV4Rqr.jpeg", color: "#EA4335" },
+  { name: "ร.ต.อ.อนุชา ศึกขยาด", phone: "0642926026", photo: "https://i.imgur.com/XtqsN9Y.jpeg", color: "#9C27B0" },
+  { name: "ร.ต.อ.นรินทร์ สิทธิผล", phone: "0841561591", photo: "https://i.imgur.com/yBcNwLI.jpeg", color: "#00ACC1" },
+  { name: "ร.ต.ท.เกษม ยนต์ประพันธ์", phone: "0925678896", photo: "https://i.imgur.com/ioL2Nev.jpeg", color: "#F4511E" },
+  { name: "ร.ต.ท.หญิง นันท์นภัส พงษ์สุวรรณ์", phone: "0935499258", photo: "https://i.imgur.com/9fUB1wW.jpeg", color: "#8E24AA" }
+];
+
+// เติมรายชื่ออัตโนมัติ
+let select = document.getElementById("dutyName");
+officers.forEach(o => {
+  select.innerHTML += `<option value="${o.name}">${o.name}</option>`;
+});
+
+// แสดงรูป + เบอร์โทร
+function showProfile() {
+  let selected = officers.find(o => o.name === dutyName.value);
+
+  if (!selected) return;
+
+  document.getElementById("previewBox").style.display = "block";
+  document.getElementById("previewImg").src = selected.photo;
+  document.getElementById("previewName").innerText = selected.name;
+  document.getElementById("previewPhone").innerHTML = "📞 " + selected.phone;
+}
+
+// URL API อัปเดต
+const apiUpdateURL =
+  "https://script.google.com/macros/s/AKfycbykaK48kdfshkJp5w2MuXCFq5SLt7b5ilpU_VqjUdHZzK93o4igivGEcPducQ5p3RxD/exec?update=1";
 
 function updateDuty() {
   const date = document.getElementById("dutyDate").value;
@@ -71,8 +125,8 @@ function updateDuty() {
 
   fetch(apiUpdateURL + "&date=" + date + "&name=" + name)
     .then(res => res.text())
-    .then(txt => {
-      document.getElementById("status").innerHTML = 
+    .then(() => {
+      document.getElementById("status").innerHTML =
         "<b style='color:green;'>บันทึกข้อมูลสำเร็จ!</b>";
     });
 }

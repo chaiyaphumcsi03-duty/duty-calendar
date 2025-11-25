@@ -15,7 +15,7 @@ body {
 }
 
 .card {
-  max-width: 450px;
+  max-width: 480px;
   margin: auto;
   background: white;
   padding: 20px;
@@ -40,24 +40,44 @@ button {
   font-size: 16px;
   border-radius: 8px;
   border: none;
+  cursor: pointer;
+}
+
+.profile-wrapper {
+  display: flex;
+  gap: 10px;
+  justify-content: space-between;
+  margin-bottom: 10px;
 }
 
 .profile-box {
+  flex: 1;
   text-align: center;
-  margin-bottom: 15px;
+  margin-bottom: 10px;
+  padding: 8px;
+  border-radius: 8px;
+  background: #f5f5f5;
 }
 
 .profile-box img {
-  width: 90px;
-  height: 90px;
+  width: 70px;
+  height: 70px;
   border-radius: 50%;
   object-fit: cover;
-  margin-bottom: 8px;
+  margin-bottom: 5px;
+}
+
+.profile-title {
+  font-size: 14px;
+  font-weight: 600;
 }
 
 .profile-name {
-  font-size: 18px;
-  font-weight: 600;
+  font-size: 14px;
+}
+
+.profile-phone {
+  font-size: 13px;
 }
 </style>
 </head>
@@ -69,13 +89,26 @@ button {
   <label>เลือกวันที่</label>
   <input type="date" id="dutyDate">
 
-  <label>เลือกบุคลากร</label>
-  <select id="dutyName" onchange="showProfile()"></select>
+  <label>เวรตรวจสถานที่เกิดเหตุ (CSI)</label>
+  <select id="dutyCsi" onchange="showProfile('csi')"></select>
 
-  <div class="profile-box" id="previewBox" style="display:none;">
-    <img id="previewImg">
-    <div class="profile-name" id="previewName"></div>
-    <div id="previewPhone"></div>
+  <label>เวรรับของกลางยาเสพติด (DRUG)</label>
+  <select id="dutyDrug" onchange="showProfile('drug')"></select>
+
+  <div class="profile-wrapper">
+    <div class="profile-box" id="previewCsi" style="display:none;">
+      <div class="profile-title">CSI</div>
+      <img id="previewCsiImg">
+      <div class="profile-name" id="previewCsiName"></div>
+      <div class="profile-phone" id="previewCsiPhone"></div>
+    </div>
+
+    <div class="profile-box" id="previewDrug" style="display:none;">
+      <div class="profile-title">DRUG</div>
+      <img id="previewDrugImg">
+      <div class="profile-name" id="previewDrugName"></div>
+      <div class="profile-phone" id="previewDrugPhone"></div>
+    </div>
   </div>
 
   <button onclick="updateDuty()">อัปเดตข้อมูล</button>
@@ -84,57 +117,77 @@ button {
 </div>
 
 <script>
-
-// ==== รายชื่อบุคลากรแบบ JSON (จากข้อมูลของคุณ) ====
+// รายชื่อบุคลากร
 const officers = [
   { name: "พ.ต.ท.หญิง กนกวรรณ อิ่มสวัสดิ์", phone: "0896496219", photo: "https://i.imgur.com/Cu8Eee5.jpeg", color: "#4285F4" },
-  { name: "พ.ต.ท.เศกสรรค์ ธรรมกุล", phone: "0878742006", photo: "https://i.imgur.com/R0WnYbq.jpeg", color: "#34A853" },
-  { name: "ร.ต.อ.สุรพงษ์ หมอดี", phone: "0982685522", photo: "https://i.imgur.com/H53f6Nv.jpeg", color: "#F9AB00" },
-  { name: "ร.ต.อ.ธีรภัทร ภิภัทรตระกูลวงษ์", phone: "0994580007", photo: "https://i.imgur.com/MvV4Rqr.jpeg", color: "#EA4335" },
-  { name: "ร.ต.อ.อนุชา ศึกขยาด", phone: "0642926026", photo: "https://i.imgur.com/XtqsN9Y.jpeg", color: "#9C27B0" },
-  { name: "ร.ต.อ.นรินทร์ สิทธิผล", phone: "0841651591", photo: "https://i.imgur.com/yBcNwLI.jpeg", color: "#00ACC1" },
-  { name: "ร.ต.ท.เกษม ยนต์ประพันธ์", phone: "0925678896", photo: "https://i.imgur.com/ioL2Nev.jpeg", color: "#F4511E" },
+  { name: "พ.ต.ท.เศกสรรค์ ธรรมกุล",          phone: "0878742006", photo: "https://i.imgur.com/R0WnYbq.jpeg", color: "#34A853" },
+  { name: "ร.ต.อ.สุรพงษ์ หมอดี",            phone: "0982685522", photo: "https://i.imgur.com/H53f6Nv.jpeg", color: "#F9AB00" },
+  { name: "ร.ต.อ.ธีรภัทร ภิภัทรตระกูลวงษ์", phone: "0994980007", photo: "https://i.imgur.com/MvV4Rqr.jpeg", color: "#EA4335" },
+  { name: "ร.ต.อ.อนุชา ศึกขยาด",             phone: "0642926026", photo: "https://i.imgur.com/XtqsN9Y.jpeg", color: "#9C27B0" },
+  { name: "ร.ต.อ.นรินทร์ สิทธิผล",           phone: "0841561591", photo: "https://i.imgur.com/yBcNwLI.jpeg", color: "#00ACC1" },
+  { name: "ร.ต.ท.เกษม ยนต์ประพันธ์",         phone: "0925678896", photo: "https://i.imgur.com/ioL2Nev.jpeg", color: "#F4511E" },
   { name: "ร.ต.ท.หญิง นันท์นภัส พงษ์สุวรรณ์", phone: "0935499258", photo: "https://i.imgur.com/9fUB1wW.jpeg", color: "#8E24AA" }
 ];
 
-// เติมรายชื่ออัตโนมัติ
-let select = document.getElementById("dutyName");
+// เติม dropdown ทั้งสองอัน
+const selCsi  = document.getElementById("dutyCsi");
+const selDrug = document.getElementById("dutyDrug");
+
 officers.forEach(o => {
-  select.innerHTML += `<option value="${o.name}">${o.name}</option>`;
+  selCsi.innerHTML  += `<option value="${o.name}">${o.name}</option>`;
+  selDrug.innerHTML += `<option value="${o.name}">${o.name}</option>`;
 });
 
-// แสดงรูป + เบอร์โทร
-function showProfile() {
-  let selected = officers.find(o => o.name === dutyName.value);
-
-  if (!selected) return;
-
-  document.getElementById("previewBox").style.display = "block";
-  document.getElementById("previewImg").src = selected.photo;
-  document.getElementById("previewName").innerText = selected.name;
-  document.getElementById("previewPhone").innerHTML = "📞 " + selected.phone;
+function showProfile(type) {
+  if (type === 'csi') {
+    const selected = officers.find(o => o.name === selCsi.value);
+    if (!selected) return;
+    document.getElementById("previewCsi").style.display = "block";
+    document.getElementById("previewCsiImg").src   = selected.photo;
+    document.getElementById("previewCsiName").innerText  = selected.name;
+    document.getElementById("previewCsiPhone").innerText = "📞 " + selected.phone;
+  } else if (type === 'drug') {
+    const selected = officers.find(o => o.name === selDrug.value);
+    if (!selected) return;
+    document.getElementById("previewDrug").style.display = "block";
+    document.getElementById("previewDrugImg").src   = selected.photo;
+    document.getElementById("previewDrugName").innerText  = selected.name;
+    document.getElementById("previewDrugPhone").innerText = "📞 " + selected.phone;
+  }
 }
 
-// URL API อัปเดต
-const apiUpdateURL =
-  "https://script.google.com/macros/s/AKfycbzJzsVI4Epp2t14kU2vOl-fr6FBaE0u5_83WPui_SHs-17H9Dn1ttqZxTetwmEKXQ/exec?update=1";
+// ใส่ URL Apps Script ตัวใหม่ของคุณตรงนี้ (อย่าใส่ ?update=1 ตรงนี้)
+const apiUpdateURL = "https://script.google.com/macros/s/AKfycby6aCYPZ6Hv7EuSbdp-ODw_CSUw30qK2y8jfeWdb0bMgeXtzYBhuPIKUEYsCnyggCDk/exec";
 
 function updateDuty() {
   const date = document.getElementById("dutyDate").value;
-  const name = document.getElementById("dutyName").value;
+  const csiName  = selCsi.value;
+  const drugName = selDrug.value;
 
-  fetch(apiUpdateURL + "&date=" + date + "&name=" + name)
+  if (!date) {
+    alert("กรุณาเลือกวันที่");
+    return;
+  }
+
+  const url = apiUpdateURL
+    + "?update=1"
+    + "&date=" + encodeURIComponent(date)
+    + "&csi="  + encodeURIComponent(csiName)
+    + "&drug=" + encodeURIComponent(drugName);
+
+  fetch(url)
     .then(res => res.text())
     .then(() => {
       document.getElementById("status").innerHTML =
         "<b style='color:green;'>บันทึกข้อมูลสำเร็จ!</b>";
+    })
+    .catch(err => {
+      document.getElementById("status").innerHTML =
+        "<b style='color:red;'>เกิดข้อผิดพลาดในการบันทึก</b>";
+      console.error(err);
     });
 }
 </script>
 
 </body>
 </html>
-
-
-
-

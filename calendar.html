@@ -80,12 +80,22 @@
 
     .shortname {
       position: absolute;
-      bottom: 5px;
       left: 5px;
       right: 5px;
-      font-size: 13px;
+      font-size: 12px;
       font-weight: 600;
       text-align: left;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .short-csi {
+      bottom: 22px;
+    }
+
+    .short-drug {
+      bottom: 5px;
     }
 
     .duty-panel {
@@ -94,30 +104,38 @@
       background: white;
       border-radius: 10px;
       box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-      font-size: 18px;
+      font-size: 16px;
+    }
+
+    .panel-section {
+      margin-bottom: 15px;
       text-align: center;
     }
 
+    .panel-title {
+      font-weight: 600;
+      margin-bottom: 5px;
+    }
+
     .panel-photo {
-      width: 80px;
-      height: 80px;
+      width: 70px;
+      height: 70px;
       border-radius: 50%;
       object-fit: cover;
-      margin-bottom: 10px;
+      margin-bottom: 5px;
       border: 3px solid #ccc;
     }
 
     .phone-btn {
       display: inline-block;
-      padding: 8px 12px;
+      padding: 6px 10px;
       background: #34A853;
       color: white;
       border-radius: 8px;
       text-decoration: none;
-      font-size: 16px;
-      margin-top: 10px;
+      font-size: 14px;
+      margin-top: 5px;
     }
-
   </style>
 </head>
 <body>
@@ -146,17 +164,18 @@
 </div>
 
 <script>
-const apiURL = "https://script.google.com/macros/s/AKfycbzJzsVI4Epp2t14kU2vOl-fr6FBaE0u5_83WPui_SHs-17H9Dn1ttqZxTetwmEKXQ/exec";
+// ใส่ URL exec ของ Apps Script ตัวล่าสุดตรงนี้
+const apiURL = "https://script.google.com/macros/s/AKfycby6aCYPZ6Hv7EuSbdp-ODw_CSUw30qK2y8jfeWdb0bMgeXtzYBhuPIKUEYsCnyggCDk/exec";
 
-// ชื่อย่อ (ยศ + ชื่อจริง)
+// ชื่อย่อ (ยศ + ชื่อ)
 const shortNames = {
   "พ.ต.ท.หญิง กนกวรรณ อิ่มสวัสดิ์": "พ.ต.ท.หญิง กนกวรรณ",
-  "พ.ต.ท.เศกสรรค์ ธรรมกุล": "พ.ต.ท.เศกสรรค์",
-  "ร.ต.อ.สุรพงษ์ หมอดี": "ร.ต.อ.สุรพงษ์",
+  "พ.ต.ท.เศกสรรค์ ธรรมกุล":          "พ.ต.ท.เศกสรรค์",
+  "ร.ต.อ.สุรพงษ์ หมอดี":            "ร.ต.อ.สุรพงษ์",
   "ร.ต.อ.ธีรภัทร ภิภัทรตระกูลวงษ์": "ร.ต.อ.ธีรภัทร",
-  "ร.ต.อ.อนุชา ศึกขยาด": "ร.ต.อ.อนุชา",
-  "ร.ต.อ.นรินทร์ สิทธิผล": "ร.ต.อ.นรินทร์",
-  "ร.ต.ท.เกษม ยนต์ประพันธ์": "ร.ต.ท.เกษม",
+  "ร.ต.อ.อนุชา ศึกขยาด":             "ร.ต.อ.อนุชา",
+  "ร.ต.อ.นรินทร์ สิทธิผล":           "ร.ต.อ.นรินทร์",
+  "ร.ต.ท.เกษม ยนต์ประพันธ์":         "ร.ต.ท.เกษม",
   "ร.ต.ท.หญิง นันท์นภัส พงษ์สุวรรณ์": "ร.ต.ท.หญิง นันท์นภัส"
 };
 
@@ -170,6 +189,9 @@ fetch(apiURL)
     dutyData = data;
     renderCalendar(current);
     autoShowTodayDuty();
+  })
+  .catch(err => {
+    console.error(err);
   });
 
 function renderCalendar(date) {
@@ -199,15 +221,21 @@ function renderCalendar(date) {
 
         row += `<td class="${isToday ? 'today' : ''}" onclick="showDuty('${fullDate}')">${day}`;
 
-        if (duty) {
-          let short = shortNames[duty.name] || duty.name;
-          row += `<div class='shortname' style="color:${duty.color};">${short}</div>`;
+        if (duty && duty.csi && duty.csi.name) {
+          const s = shortNames[duty.csi.name] || duty.csi.name;
+          row += `<div class="shortname short-csi" style="color:${duty.csi.color || '#1a73e8'};">${s}</div>`;
+        }
+
+        if (duty && duty.drug && duty.drug.name) {
+          const s2 = shortNames[duty.drug.name] || duty.drug.name;
+          row += `<div class="shortname short-drug" style="color:${duty.drug.color || '#34A853'};">${s2}</div>`;
         }
 
         row += `</td>`;
         day++;
       }
     }
+
     row += "</tr>";
     tbody += row;
   }
@@ -217,19 +245,40 @@ function renderCalendar(date) {
 
 function showDuty(date) {
   let duty = dutyData.find(x => x.date === date);
+  const panel = document.getElementById("dutyPanel");
 
-  if (!duty) {
-    document.getElementById("dutyPanel").innerHTML =
-      `📌 วันที่ ${formatThai(date)}<br>❌ ไม่มีข้อมูล`;
+  if (!duty || (!duty.csi || !duty.csi.name) && (!duty.drug || !duty.drug.name)) {
+    panel.innerHTML = `📌 วันที่ ${formatThai(date)}<br>❌ ไม่มีข้อมูลเวร`;
     return;
   }
 
-  document.getElementById("dutyPanel").innerHTML = `
-    <img src="${duty.photo}" class="panel-photo">
-    <div><b>${duty.name}</b></div>
-    <div>📞 ${duty.phone}</div>
-    <a class="phone-btn" href="tel:${duty.phone}">โทรเลย</a>
-  `;
+  let html = `<div><b>📌 วันที่ ${formatThai(date)}</b></div>`;
+
+  if (duty.csi && duty.csi.name) {
+    html += `
+      <div class="panel-section">
+        <div class="panel-title" style="color:${duty.csi.color || '#1a73e8'};">เวรตรวจสถานที่เกิดเหตุ (CSI)</div>
+        <img src="${duty.csi.photo}" class="panel-photo"><br>
+        <div>${duty.csi.name}</div>
+        <div>📞 ${duty.csi.phone}</div>
+        <a class="phone-btn" href="tel:${duty.csi.phone}">โทร CSI</a>
+      </div>
+    `;
+  }
+
+  if (duty.drug && duty.drug.name) {
+    html += `
+      <div class="panel-section">
+        <div class="panel-title" style="color:${duty.drug.color || '#34A853'};">เวรรับของกลางยาเสพติด (DRUG)</div>
+        <img src="${duty.drug.photo}" class="panel-photo"><br>
+        <div>${duty.drug.name}</div>
+        <div>📞 ${duty.drug.phone}</div>
+        <a class="phone-btn" href="tel:${duty.drug.phone}">โทร DRUG</a>
+      </div>
+    `;
+  }
+
+  panel.innerHTML = html;
 }
 
 function autoShowTodayDuty() {

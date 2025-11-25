@@ -56,6 +56,7 @@
       background: #f1f3f4;
       padding: 12px;
       font-weight: 600;
+      text-align: center;
     }
 
     td {
@@ -65,6 +66,7 @@
       padding: 8px;
       cursor: pointer;
       position: relative;
+      font-size: 14px;
     }
 
     td:hover {
@@ -76,16 +78,14 @@
       border: 2px solid #4285F4;
     }
 
-    .duty-box {
+    .shortname {
       position: absolute;
       bottom: 5px;
       left: 5px;
       right: 5px;
-      padding: 2px 4px;
-      border-radius: 4px;
-      font-size: 12px;
+      font-size: 13px;
+      font-weight: 600;
       text-align: left;
-      color: white;
     }
 
     .duty-panel {
@@ -95,11 +95,12 @@
       border-radius: 10px;
       box-shadow: 0 2px 8px rgba(0,0,0,0.1);
       font-size: 18px;
+      text-align: center;
     }
 
     .panel-photo {
-      width: 70px;
-      height: 70px;
+      width: 80px;
+      height: 80px;
       border-radius: 50%;
       object-fit: cover;
       margin-bottom: 10px;
@@ -115,15 +116,8 @@
       text-decoration: none;
       font-size: 16px;
       margin-top: 10px;
-      display: inline-block;
     }
 
-    /* Responsive */
-    @media (max-width: 600px) {
-      h2 { font-size: 22px; }
-      td { height: 80px; font-size: 12px; }
-      .duty-box { font-size: 10px; }
-    }
   </style>
 </head>
 <body>
@@ -154,6 +148,18 @@
 <script>
 const apiURL = "https://script.google.com/macros/s/AKfycbzJzsVI4Epp2t14kU2vOl-fr6FBaE0u5_83WPui_SHs-17H9Dn1ttqZxTetwmEKXQ/exec";
 
+// ชื่อย่อ (ยศ + ชื่อจริง)
+const shortNames = {
+  "พ.ต.ท.หญิง กนกวรรณ อิ่มสวัสดิ์": "พ.ต.ท.หญิง กนกวรรณ",
+  "พ.ต.ท.เศกสรรค์ ธรรมกุล": "พ.ต.ท.เศกสรรค์",
+  "ร.ต.อ.สุรพงษ์ หมอดี": "ร.ต.อ.สุรพงษ์",
+  "ร.ต.อ.ธีรภัทร ภิภัทรตระกูลวงษ์": "ร.ต.อ.ธีรภัทร",
+  "ร.ต.อ.อนุชา ศึกขยาด": "ร.ต.อ.อนุชา",
+  "ร.ต.อ.นรินทร์ สิทธิผล": "ร.ต.อ.นรินทร์",
+  "ร.ต.ท.เกษม ยนต์ประพันธ์": "ร.ต.ท.เกษม",
+  "ร.ต.ท.หญิง นันท์นภัส พงษ์สุวรรณ์": "ร.ต.ท.หญิง นันท์นภัส"
+};
+
 let dutyData = [];
 let current = new Date();
 
@@ -169,7 +175,7 @@ fetch(apiURL)
 function renderCalendar(date) {
   const year = date.getFullYear();
   const month = date.getMonth();
-  
+
   document.getElementById("monthTitle").innerText =
     date.toLocaleString("th-TH", { month: "long", year: "numeric" });
 
@@ -191,27 +197,17 @@ function renderCalendar(date) {
         let duty = dutyData.find(x => x.date === fullDate);
         let isToday = fullDate === new Date().toISOString().slice(0, 10);
 
-        row += `
-          <td class="${isToday ? 'today' : ''}" onclick="showDuty('${fullDate}')">
-            ${day}
+        row += `<td class="${isToday ? 'today' : ''}" onclick="showDuty('${fullDate}')">${day}`;
 
-            ${duty && duty.photo ? `
-              <img src="${duty.photo}" style="
-                width:28px;height:28px;border-radius:50%;
-                position:absolute;top:5px;left:5px;object-fit:cover;">
-            ` : ""}
+        if (duty) {
+          let short = shortNames[duty.name] || duty.name;
+          row += `<div class='shortname' style="color:${duty.color};">${short}</div>`;
+        }
 
-            ${duty ? `
-              <div class='duty-box' style="background:${duty.color};">
-                ${duty.name}
-              </div>
-            ` : ""}
-          </td>
-        `;
+        row += `</td>`;
         day++;
       }
     }
-
     row += "</tr>";
     tbody += row;
   }
@@ -260,5 +256,3 @@ function formatThai(d) {
 
 </body>
 </html>
-
-
